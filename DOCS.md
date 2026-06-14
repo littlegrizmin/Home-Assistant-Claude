@@ -1,82 +1,95 @@
-# HA Claude Addon Documentation
+# Claude Code — Home Assistant Addon Documentation
 
-## Installation Instructions
+## Installation
 
 1. **Add the repository** to your Home Assistant installation:
-   - Go to Settings → Add-ons → Add-on Store
-   - Click the three dots menu → Repositories
-   - Add this repository URL and click OK
+   - Go to **Settings → Add-ons → Add-on Store**
+   - Click the three-dot menu → **Repositories**
+   - Add `https://github.com/littlegrizmin/Home-Assistant-Claude` and click OK
 
-2. **Install the addon**:
-   - Search for "Claude Code" in the add-on store
-   - Click on the addon and then "Install"
+2. **Install the addon:**
+   - Search for **"Claude Code"** in the Add-on Store
+   - Click the addon, then click **Install**
 
-3. **Configure the addon**:
-   - Go to Settings → Add-ons → Claude Code → Configuration
-   - Set your preferred options:
-     - `watchdog_enabled`: Enable automatic restart if the service crashes (default: true)
-     - `auto_start_claude`: Automatically start the service on boot (default: true)
-     - `font_size`: Terminal font size in pixels (8-32, default: 14)
-     - `theme`: Terminal theme "dark" or "light" (default: dark)
-     - `tmux_enabled`: Enable terminal multiplexer for session persistence (default: true)
-     - `scrollback_lines`: Terminal scrollback buffer size (1000-50000, default: 5000)
+3. **Configure the addon:**
+   - Go to **Settings → Add-ons → Claude Code → Configuration**
+   - Adjust options as needed (all have sensible defaults)
 
-4. **Start the addon**:
-   - Click "Start" to begin the service
-   - Wait for initialization to complete
+4. **Start the addon:**
+   - Click **Start**
+   - The Claude Code panel will appear in the left sidebar
 
-## Initial Claude Login
+---
 
-The first time you start the addon, you'll need to authenticate with Claude:
+## First Login
 
-1. Start the addon and wait for it to initialize
-2. Access the web interface via Settings → Add-ons → Claude Code → Web UI
-3. You'll see a welcome message with instructions
-4. Follow the on-screen prompts to authenticate with your Anthropic account
-5. Once authenticated, you can use the terminal interface
+The first time you start the addon you need to authenticate with your claude.ai account:
 
-The authentication process requires:
-- An active Anthropic API key or account credentials
-- Internet connectivity for initial authentication
-- A modern web browser (Chrome, Firefox, Edge recommended)
+1. Open the **Claude Code** panel in HA
+2. Type `claude login` in the terminal and press Enter
+3. A URL will appear — open it in your browser
+4. Sign in with your claude.ai account (Free, Pro, or Max)
+5. Authentication is saved to `/data/claude/` and persists across restarts
 
-## Useful Shortcuts
+**No API key is required.** This addon uses your claude.ai account subscription.
 
-### Terminal Shortcuts (if tmux is enabled):
+---
+
+## Configuration Options
+
+| Option | Default | Description |
+|---|---|---|
+| `watchdog_enabled` | `true` | Restart the addon automatically on crash |
+| `auto_start_claude` | `true` | Launch `claude` immediately when terminal opens |
+| `font_size` | `14` | Terminal font size (8–32 px) |
+| `theme` | `dark` | Terminal color theme: `dark` or `light` |
+| `tmux_enabled` | `true` | Keep session alive across browser refreshes |
+| `scrollback_lines` | `5000` | Lines of terminal history to retain (1000–50000) |
+| `max_death_tally` | `3` | Max consecutive crashes before watchdog stops restarting (1–10) |
+
+---
+
+## Terminal Shortcuts
+
+### tmux (when `tmux_enabled: true`)
+
 | Shortcut | Action |
-|----------|--------|
-| `Ctrl+b` then `c` | Create new window |
-| `Ctrl+b` then `n` | Next window |
-| `Ctrl+b` then `p` | Previous window |
-| `Ctrl+b` then `"` | Split pane horizontally |
-| `Ctrl+b` then `%` | Split pane vertically |
-| `Ctrl+b` then arrow keys | Switch between panes |
+|---|---|
+| `Ctrl+b c` | Create new window |
+| `Ctrl+b n` | Switch to next window |
+| `Ctrl+b p` | Switch to previous window |
+| `Ctrl+b "` | Split pane horizontally |
+| `Ctrl+b %` | Split pane vertically |
+| `Ctrl+b` + arrow keys | Navigate between panes |
+| `Ctrl+b d` | Detach session (keeps running in background) |
 
-### Claude Code Shortcuts:
+### Claude Code
+
 | Shortcut | Action |
-|----------|--------|
-| `Tab` | Auto-complete command/file suggestions |
-| `Esc` | Cancel current operation or exit prompt |
-| `Ctrl+c` | Interrupt current process |
+|---|---|
+| `Tab` | Autocomplete command or filename |
+| `Esc` | Cancel current operation |
+| `Ctrl+c` | Interrupt running process |
 | `Ctrl+d` | Exit terminal session |
 
-### Web Interface Shortcuts:
-| Shortcut | Action |
-|----------|--------|
-| `F11` | Toggle fullscreen mode |
-| `Ctrl+f` | Find in terminal output |
-| `Ctrl+r` | Reload page (if needed) |
+---
 
 ## Troubleshooting
 
-- **Service not starting**: Check the addon logs for errors under Settings → Add-ons → Claude Code → Logs
-- **Authentication issues**: Ensure your internet connection is stable and Anthropic service status is normal
-- **Performance problems**: Try adjusting font_size or disabling tmux if experiencing lag
-- **Connection refused**: Verify that port 7681 (ingress) is accessible in your network configuration
+**Addon does not start**
+Check the logs: Settings → Add-ons → Claude Code → **Logs**
 
-## Additional Information
+**"Not authenticated" or claude login required**
+Run `claude login` in the terminal and follow the URL shown.
 
-- The addon uses S6-overlay for process management with built-in watchdog functionality
-- All data is stored within the Home Assistant container environment
-- Regular updates are recommended to stay current with Claude API changes
-- For advanced configuration, refer to the dev_plan.md file in the repository
+**Session lost on browser refresh**
+Enable `tmux_enabled: true` in the addon configuration. With tmux, closing the browser tab does not terminate the Claude session.
+
+**Claude cannot see or edit HA files**
+The addon mounts the HA config directory at `/homeassistant/` with read-write access by default. If you see permission errors, check that the addon has `config:rw` in Settings → Add-ons → Claude Code → Info.
+
+**Addon keeps restarting**
+Check `watchdog_enabled` and `max_death_tally` settings. If the process is crashing repeatedly, review the logs for the root cause before increasing the tally limit.
+
+**Re-authenticate after logout**
+Run `claude login` again. Auth data is stored in `/data/claude/` and survives addon restarts. To fully reset authentication, stop the addon and delete `/data/claude/` via the HA file editor or SSH.

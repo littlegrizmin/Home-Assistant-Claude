@@ -1,8 +1,8 @@
 # Claude Code — Home Assistant Addon
 
-Addon за Home Assistant, който стартира [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) директно на твоята HA машина и го прави достъпен като интерактивен терминал в HA UI — без SSH, без отделни приложения.
+A Home Assistant addon that runs [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) directly on your HA machine and exposes it as an interactive terminal inside the HA UI — no SSH, no separate applications required.
 
-Claude има достъп до целия Home Assistant конфиг (`/homeassistant/`), може да чете и редактира автоматизации, скриптове, `configuration.yaml` и всичко останало.
+Claude has full read/write access to your Home Assistant config directory (`/homeassistant/`), including automations, scripts, `configuration.yaml`, and everything else.
 
 ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Supervised-blue)
 ![Architecture](https://img.shields.io/badge/arch-amd64%20%7C%20aarch64-lightgrey)
@@ -10,133 +10,133 @@ Claude има достъп до целия Home Assistant конфиг (`/homeas
 
 ---
 
-## Как изглежда
+## How It Works
 
 ```
-HA UI (браузър)
+HA UI (browser)
     └── Claude Code panel
-            └── Интерактивен терминал
+            └── Interactive terminal
                     └── Claude Code CLI
-                            └── /homeassistant/  ← целият HA конфиг
+                            └── /homeassistant/  ← your entire HA config
 ```
 
-Отваряш панела в HA, пишеш команди на Claude, той чете/редактира твоите автоматизации.
+Open the panel in HA, type commands to Claude, and it reads/edits your automations directly.
 
 ---
 
-## Изисквания
+## Requirements
 
-- **Home Assistant Supervised** на Linux (Ubuntu, Debian и др.)
-- **claude.ai акаунт** (Free, Pro или Max) — не се изисква API ключ
-- Архитектура: **amd64** (Intel/AMD) или **aarch64** (Raspberry Pi 4/5)
+- **Home Assistant Supervised** on Linux (Ubuntu, Debian, etc.)
+- **claude.ai account** (Free, Pro, or Max) — no API key required
+- Architecture: **amd64** (Intel/AMD) or **aarch64** (Raspberry Pi 4/5)
 
 ---
 
-## Инсталация
+## Installation
 
-### 1. Добави репозитория
+### 1. Add the repository
 
-В Home Assistant:
+In Home Assistant:
 **Settings → Add-ons → Add-on Store → ⋮ → Repositories**
 
-Добави URL:
+Add this URL:
 ```
 https://github.com/littlegrizmin/Home-Assistant-Claude
 ```
 
-### 2. Инсталирай addon-а
+### 2. Install the addon
 
-Намери **"Claude Code"** в Add-on Store → **Install**.
+Find **"Claude Code"** in the Add-on Store → click **Install**.
 
-### 3. Стартирай
+### 3. Start the addon
 
-Натисни **Start**. Addon-ът ще стартира и ще е достъпен като панел в лявото меню.
+Click **Start**. The addon will initialize and appear as a panel in the left sidebar.
 
-### 4. Първи вход (само веднъж)
+### 4. First login (one time only)
 
-Отвори панела **Claude Code** в HA → пишеш в терминала:
+Open the **Claude Code** panel in HA and type in the terminal:
 
 ```
 claude login
 ```
 
-Ще получиш URL → отвори го в браузъра → влез с claude.ai акаунта си → готово.
+You'll receive a URL → open it in your browser → sign in with your claude.ai account → done.
 
-**Auth-ът се запазва между рестарти** — не е нужно да се логваш отново.
+**Authentication persists between restarts** — no need to log in again.
 
 ---
 
-## Настройки
+## Configuration
 
-| Настройка | По подразбиране | Описание |
+| Option | Default | Description |
 |---|---|---|
-| `watchdog_enabled` | `true` | Рестартира addon-а при crash |
-| `auto_start_claude` | `true` | Стартира `claude` веднага при отваряне на терминала |
-| `font_size` | `14` | Размер на шрифта в терминала (8–32) |
-| `theme` | `dark` | Тема на терминала: `dark` или `light` |
-| `tmux_enabled` | `true` | Persistent сесия — не губиш работата при refresh на страницата |
-| `scrollback_lines` | `5000` | Брой редове история в терминала |
-| `max_death_tally` | `3` | Брой рестарти преди watchdog-ът се отказва |
+| `watchdog_enabled` | `true` | Automatically restart the addon on crash |
+| `auto_start_claude` | `true` | Launch `claude` immediately when the terminal opens |
+| `font_size` | `14` | Terminal font size (8–32) |
+| `theme` | `dark` | Terminal theme: `dark` or `light` |
+| `tmux_enabled` | `true` | Persistent session — keeps your work on browser refresh |
+| `scrollback_lines` | `5000` | Number of lines kept in terminal history |
+| `max_death_tally` | `3` | Number of restarts before the watchdog gives up |
 
 ---
 
-## Полезни команди в терминала
+## Useful Commands
 
 ```bash
-# Провери версията на Claude Code
+# Check Claude Code version
 claude --version
 
-# Стартирай нова Claude сесия
+# Start a new Claude session
 claude
 
-# Ре-аутентикирай се
+# Re-authenticate
 claude login
 
-# Виж конфигурацията
+# Show current configuration
 claude config list
 ```
 
-### tmux shortcuts (при `tmux_enabled: true`)
+### tmux shortcuts (when `tmux_enabled: true`)
 
-| Клавиш | Действие |
+| Key | Action |
 |---|---|
-| `Ctrl+b c` | Нов прозорец |
-| `Ctrl+b n / p` | Следващ / предишен прозорец |
-| `Ctrl+b "` | Раздели хоризонтално |
-| `Ctrl+b %` | Раздели вертикално |
-| `Ctrl+b d` | Откачи сесията (Claude продължава да работи) |
+| `Ctrl+b c` | New window |
+| `Ctrl+b n / p` | Next / previous window |
+| `Ctrl+b "` | Split pane horizontally |
+| `Ctrl+b %` | Split pane vertically |
+| `Ctrl+b d` | Detach session (Claude keeps running in background) |
 
 ---
 
-## Как работи
+## How It Works Under the Hood
 
 **Auth persistence:**
-При всеки старт addon-ът създава symlink `/root/.claude → /data/claude/`. Папката `/data/` е persistent storage на addon-а — оцелява при рестарти и ъпдейти.
+On every start, the addon creates a symlink `/root/.claude → /data/claude/`. The `/data/` directory is the addon's persistent storage — it survives restarts and updates.
 
-**MCP интеграция:**
-Addon-ът автоматично регистрира Home Assistant като MCP сървър в Claude. Това дава на Claude директен достъп до entities, services и automations чрез структурирани инструменти.
+**MCP integration:**
+The addon automatically registers Home Assistant as an MCP server in Claude, giving it structured access to entities, services, and automations.
 
 **Watchdog:**
-S6-overlay следи ttyd процеса. При crash се рестартира автоматично. След `max_death_tally` поредни провала спира и логва грешката.
+S6-overlay monitors the ttyd process. On crash it restarts automatically. After `max_death_tally` consecutive failures it stops and logs the error.
 
 ---
 
 ## Troubleshooting
 
-**Addon не стартира**
+**Addon won't start**
 → Settings → Add-ons → Claude Code → **Logs**
 
 **"Not authenticated"**
-→ Отвори терминала → `claude login`
+→ Open the terminal → run `claude login`
 
-**Терминалът се затваря при refresh**
-→ Включи `tmux_enabled: true` в настройките
+**Terminal resets on browser refresh**
+→ Enable `tmux_enabled: true` in addon settings
 
-**Claude не вижда HA файловете**
-→ Провери дали addon-ът има `config:rw` в мапинга (по подразбиране е включено)
+**Claude can't see HA files**
+→ Verify the addon has `config:rw` in its volume mapping (enabled by default)
 
 ---
 
-## Лиценз
+## License
 
-MIT — виж [LICENSE](LICENSE)
+MIT — see [LICENSE](LICENSE)
