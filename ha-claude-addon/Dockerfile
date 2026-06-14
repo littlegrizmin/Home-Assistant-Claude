@@ -1,12 +1,10 @@
-FROM ghcr.io/hassio-addons/base:15.0.1
+ARG BUILD_FROM
+FROM ${BUILD_FROM}
 
-# Build argument for architecture mapping (amd64/aarch64)
 ARG BUILD_ARCH=amd64
 
-# Install system dependencies from Alpine repository
 RUN apk add --no-cache nodejs npm git curl bash tmux jq
 
-# Download ttyd static binary with architecture-specific URL
 RUN case "$BUILD_ARCH" in \
       amd64)   ARCH="x86_64" ;; \
       aarch64) ARCH="aarch64" ;; \
@@ -15,14 +13,30 @@ RUN case "$BUILD_ARCH" in \
     curl -L "https://github.com/tsl0922/ttyd/releases/download/1.7.7/ttyd.${ARCH}" \
         -o /usr/bin/ttyd && chmod +x /usr/bin/ttyd
 
-# Install Claude Code CLI globally via npm
 RUN npm install -g @anthropic-ai/claude-code
 
-# Install hass-mcp package globally for MCP server support
 RUN npm install -g hass-mcp 2>/dev/null || echo "hass-mcp installation failed, continuing without MCP"
 
-# Copy addon root filesystem
 COPY rootfs /
 
-# Make start script executable
 RUN chmod +x /usr/bin/start-claude.sh
+
+ARG BUILD_DATE
+ARG BUILD_DESCRIPTION
+ARG BUILD_NAME
+ARG BUILD_REF
+ARG BUILD_REPOSITORY
+ARG BUILD_VERSION
+
+LABEL \
+    io.hass.name="${BUILD_NAME}" \
+    io.hass.description="${BUILD_DESCRIPTION}" \
+    io.hass.arch="${BUILD_ARCH}" \
+    io.hass.type="addon" \
+    io.hass.version=${BUILD_VERSION} \
+    org.opencontainers.image.title="${BUILD_NAME}" \
+    org.opencontainers.image.description="${BUILD_DESCRIPTION}" \
+    org.opencontainers.image.created=${BUILD_DATE} \
+    org.opencontainers.image.revision=${BUILD_REF} \
+    org.opencontainers.image.source="https://github.com/${BUILD_REPOSITORY}" \
+    org.opencontainers.image.version=${BUILD_VERSION}
