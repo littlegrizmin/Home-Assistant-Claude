@@ -5,6 +5,9 @@ AUTO_START=$(bashio::config 'auto_start_claude')
 echo ""
 echo "╔══════════════════════════════════════╗"
 echo "║       Claude Code — Home Assistant   ║"
+echo "╠══════════════════════════════════════╣"
+echo "║  Copy: Ctrl+Shift+C  (or select)     ║"
+echo "║  Paste: Ctrl+Shift+V (or right-click)║"
 echo "╚══════════════════════════════════════╝"
 echo ""
 
