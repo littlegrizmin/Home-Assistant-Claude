@@ -8,7 +8,7 @@ echo "║       Claude Code — Home Assistant   ║"
 echo "╠══════════════════════════════════════╣"
 echo "║  Copy: Ctrl+Shift+C  (or select)     ║"
 echo "║  Paste: Ctrl+Shift+V (or right-click)║"
-echo "║  Login URL: press 'c' to copy it     ║"
+echo "║  Login: run 'claude-login' (QR code) ║"
 echo "╚══════════════════════════════════════╝"
 echo ""
 
