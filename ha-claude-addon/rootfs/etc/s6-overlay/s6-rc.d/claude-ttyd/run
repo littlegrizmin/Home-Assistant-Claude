@@ -34,7 +34,7 @@ FONT_SIZE=$(bashio::config 'font_size')
 THEME=$(bashio::config 'theme')
 TMUX_ENABLED=$(bashio::config 'tmux_enabled')
 
-TTYD_ARGS="-t fontSize=${FONT_SIZE:-14} -t theme=${THEME:-dark}"
+TTYD_ARGS="-t fontSize=${FONT_SIZE:-14} -t theme=${THEME:-dark} -t cols=220"
 
 bashio::log.info "Starting ttyd on port 7681 (tmux_enabled=${TMUX_ENABLED})"
 exec ttyd ${TTYD_ARGS} -p 7681 -W /usr/bin/start-claude.sh
