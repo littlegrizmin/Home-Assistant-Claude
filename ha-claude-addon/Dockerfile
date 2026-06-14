@@ -19,6 +19,7 @@ RUN npm install -g hass-mcp 2>/dev/null || echo "hass-mcp installation failed, c
 COPY rootfs /
 
 RUN find /etc/cont-init.d/ -type f -exec chmod +x {} \; \
+    && chmod +x /usr/bin/start-claude.sh /usr/bin/start-claude-inner.sh \
     && find /usr/bin/ -name "*.sh" -exec chmod +x {} \; \
     && find /etc/s6-overlay/s6-rc.d/ -name "run" -exec chmod +x {} \; \
     && find /etc/s6-overlay/s6-rc.d/ -name "finish" -exec chmod +x {} \;
