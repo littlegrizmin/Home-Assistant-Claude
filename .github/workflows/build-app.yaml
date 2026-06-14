@@ -62,7 +62,6 @@ jobs:
             ${{ steps.version.outputs.image }}:latest
           build-args: |
             BUILD_ARCH=${{ matrix.arch }}
-            BUILD_FROM=ghcr.io/hassio-addons/base-${{ matrix.arch }}:15.0.1
             BUILD_VERSION=${{ steps.version.outputs.version }}
             BUILD_REF=${{ github.sha }}
             BUILD_REPOSITORY=${{ github.repository }}
