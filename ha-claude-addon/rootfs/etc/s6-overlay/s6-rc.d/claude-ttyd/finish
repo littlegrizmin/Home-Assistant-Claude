@@ -1,59 +1,16 @@
 #!/usr/bin/with-contenv bashio
 
-# TASK-006: S6 service finish script for claude-ttyd - logs on exit
-# TASK-007: S6 watchdog configuration with death count tracking
-
-bashio::log.info "claude-ttyd service is exiting..."
-
-# === TASK-007: Watchdog Death Count Tracking ===
+DEATH_COUNT_FILE="/data/watchdog/death-count"
 WATCHDOG_ENABLED=$(bashio::config 'watchdog_enabled')
-DEATH_COUNT_DIR="/data/.mcp/watchdog"
-DEATH_COUNT_FILE="${DEATH_COUNT_DIR}/death-count"
 
-# Disable watchdog if explicitly set to false
-if [ "${WATCHDOG_ENABLED,,}" = "false" ]; then
-    bashio::log.info "Watchdog disabled via configuration, skipping death count tracking"
-else
-    # Ensure watchdog directory exists in /data for persistence
-    mkdir -p "${DEATH_COUNT_DIR}" 2>/dev/null || true
-
-    # Check if the exit was successful (exit code 0) or failed (non-zero)
-    EXIT_CODE=$?
-    
-    if [ "$EXIT_CODE" -ne 0 ]; then
-        bashio::log.warning "Service exited with error code: ${EXIT_CODE}"
-        
-        # Increment death count only on failure
-        if [ ! -f "${DEATH_COUNT_FILE}" ]; then
-            echo "1" > "${DEATH_COUNT_FILE}"
-            bashio::log.info "Death count initialized to 1 after first failure"
-        else
-            CURRENT_DEATHS=$(cat "${DEATH_COUNT_FILE}" 2>/dev/null || echo "0")
-            
-            # Validate current death count is a number
-            if [[ "$CURRENT_DEATHS" =~ ^[0-9]+$ ]]; then
-                NEW_DEATHS=$((CURRENT_DEATHS + 1))
-                echo "${NEW_DEATHS}" > "${DEATH_COUNT_FILE}"
-                bashio::log.info "Death count incremented to ${NEW_DEATHS}"
-            else
-                bashio::log.warning "Invalid death-count file content, resetting to 1"
-                echo "1" > "${DEATH_COUNT_FILE}"
-            fi
-        fi
+if [ "${WATCHDOG_ENABLED}" != "false" ]; then
+    if [ "$1" -ne 0 ] 2>/dev/null; then
+        CURRENT=$(cat "${DEATH_COUNT_FILE}" 2>/dev/null || echo "0")
+        [[ "$CURRENT" =~ ^[0-9]+$ ]] || CURRENT=0
+        echo $((CURRENT + 1)) > "${DEATH_COUNT_FILE}"
+        bashio::log.warning "claude-ttyd crashed (exit=$1), death count: $((CURRENT + 1))"
     else
-        # Reset death count on successful exit
-        if [ -f "${DEATH_COUNT_FILE}" ]; then
-            rm -f "${DEATH_COUNT_FILE}"
-            bashio::log.info "Death count reset after successful service restart"
-        fi
+        rm -f "${DEATH_COUNT_FILE}"
+        bashio::log.info "claude-ttyd exited cleanly, death count reset"
     fi
 fi
-
-# === End TASK-007 Watchdog Death Count Tracking ===
-
-# Log the exit reason if available
-if [ -n "$1" ]; then
-    bashio::log.info "Exit signal/reason: $1"
-fi
-
-bashio::log.info "claude-ttyd service has stopped"
