@@ -1,0 +1,89 @@
+name: Build addon
+
+on:
+  workflow_call:
+    inputs:
+      app:
+        required: true
+        type: string
+      publish:
+        required: true
+        type: boolean
+
+jobs:
+  prepare:
+    name: Prepare build
+    runs-on: ubuntu-latest
+    outputs:
+      architectures: ${{ steps.info.outputs.architectures }}
+      build_matrix: ${{ steps.matrix.outputs.build_matrix }}
+      image_name: ${{ steps.info.outputs.image }}
+      name: ${{ steps.info.outputs.name }}
+      description: ${{ steps.info.outputs.description }}
+      version: ${{ steps.info.outputs.version }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Get addon information
+        id: info
+        uses: home-assistant/actions/helpers/info@master
+        with:
+          path: ${{ inputs.app }}
+
+      - name: Prepare build matrix
+        id: matrix
+        uses: home-assistant/builder/actions/prepare-multi-arch-matrix@2026.03.2
+        with:
+          architectures: ${{ steps.info.outputs.architectures }}
+
+  build:
+    name: Build ${{ matrix.arch }}
+    needs: prepare
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.prepare.outputs.build_matrix) }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Build addon image
+        uses: home-assistant/builder/actions/build-image@2026.03.2
+        with:
+          arch: ${{ matrix.arch }}
+          image: ${{ needs.prepare.outputs.image_name }}
+          version: ${{ needs.prepare.outputs.version }}
+          name: ${{ needs.prepare.outputs.name }}
+          description: ${{ needs.prepare.outputs.description }}
+          path: ${{ inputs.app }}
+          push: ${{ inputs.publish }}
+          tags: |
+            ${{ needs.prepare.outputs.version }}
+            latest
+
+  manifest:
+    name: Publish multi-arch manifest
+    needs:
+      - prepare
+      - build
+    if: inputs.publish
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      packages: write
+    steps:
+      - name: Publish manifest
+        uses: home-assistant/builder/actions/publish-multi-arch-manifest@2026.03.2
+        with:
+          image: ${{ needs.prepare.outputs.image_name }}
+          version: ${{ needs.prepare.outputs.version }}
+          tags: |
+            ${{ needs.prepare.outputs.version }}
+            latest

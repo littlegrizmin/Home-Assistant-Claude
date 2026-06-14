@@ -2,6 +2,7 @@ slug: ha_claude
 name: "Claude Code"
 version: "1.0.0"
 arch: [amd64, aarch64]
+image: "ghcr.io/littlegrizmin/home-assistant-claude/{arch}-ha_claude"
 map: [config:rw, ssl:ro, share:rw, backup:ro, media:ro]
 
 ingress: true
