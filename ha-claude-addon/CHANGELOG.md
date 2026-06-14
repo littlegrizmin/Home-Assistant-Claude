@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.2] - 2026-06-15
+
+### Added
+- `claude-login` command: wraps `claude login` and renders the OAuth URL as a QR code in the terminal — scan with your phone to bypass iframe clipboard restrictions
+
 ## [1.1.1] - 2026-06-15
 
 ### Fixed
