@@ -1,5 +1,7 @@
 # Claude Code — Home Assistant Addon
 
+> **Disclaimer:** This is an **unofficial, community-made addon** and is not affiliated with, endorsed by, or supported by Anthropic. Claude and Claude Code are trademarks of Anthropic, PBC. Use at your own risk.
+
 A Home Assistant addon that runs [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) directly on your HA machine and exposes it as an interactive terminal inside the HA UI — no SSH, no separate applications required.
 
 Claude has full read/write access to your Home Assistant config directory (`/homeassistant/`), including automations, scripts, `configuration.yaml`, and everything else.
@@ -96,6 +98,13 @@ claude login
 claude config list
 ```
 
+### Terminal copy/paste
+
+| Action | Shortcut |
+|---|---|
+| Copy | Select text with mouse, or `Ctrl+Shift+C` |
+| Paste | Right-click, or `Ctrl+Shift+V` |
+
 ### tmux shortcuts (when `tmux_enabled: true`)
 
 | Key | Action |
@@ -134,6 +143,9 @@ S6-overlay monitors the ttyd process. On crash it restarts automatically. After 
 
 **Claude can't see HA files**
 → Verify the addon has `config:rw` in its volume mapping (enabled by default)
+
+**`claude login` URL is split across multiple lines**
+→ The terminal is set to 220 columns — if it still wraps, zoom out your browser slightly
 
 ---
 
