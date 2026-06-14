@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.1] - 2026-06-15
+
+### Fixed
+- Removed fixed terminal width (no more horizontal scrollbar)
+- `claude login` URL: press `c` to copy it — no need to click the wrapped link
+
 ## [1.1.0] - 2026-06-15
 
 ### Fixed
