@@ -1,5 +1,5 @@
 * text=auto
 *.sh text eol=lf
 rootfs/etc/cont-init.d/* text eol=lf
-rootfs/s6-overlay/**/* text eol=lf
+rootfs/etc/s6-overlay/**/* text eol=lf
 rootfs/usr/bin/* text eol=lf
