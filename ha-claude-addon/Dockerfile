@@ -2,7 +2,7 @@ FROM ghcr.io/hassio-addons/base:15.0.1
 
 ARG BUILD_ARCH=amd64
 
-RUN apk add --no-cache nodejs npm git curl bash tmux jq qrencode
+RUN apk add --no-cache nodejs npm git curl bash tmux jq
 
 RUN case "$BUILD_ARCH" in \
       amd64)   ARCH="x86_64" ;; \
