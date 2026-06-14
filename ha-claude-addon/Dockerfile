@@ -18,7 +18,11 @@ RUN npm install -g hass-mcp 2>/dev/null || echo "hass-mcp installation failed, c
 
 COPY rootfs /
 
-RUN chmod +x /usr/bin/start-claude.sh
+RUN chmod +x /usr/bin/start-claude.sh \
+    && chmod +x /etc/cont-init.d/10-setup.sh \
+    && chmod +x /etc/services.d/claude-ttyd/run 2>/dev/null || true \
+    && find /etc/cont-init.d/ -type f -exec chmod +x {} \; \
+    && find /usr/bin/ -name "*.sh" -exec chmod +x {} \;
 
 ARG BUILD_DATE
 ARG BUILD_DESCRIPTION
