@@ -1,0 +1,38 @@
+slug: ha_claude
+name: "Claude Code"
+version: "1.0.0"
+arch: [amd64, aarch64]
+map: [config:rw, ssl:ro, share:rw, backup:ro, media:ro]
+
+ingress: true
+ingress_port: 7681
+ingress_stream: true
+panel_icon: mdi:robot
+panel_title: "Claude Code"
+
+hassio_api: true
+homeassistant_api: true
+auth_api: true
+hassio_role: manager
+
+startup: application
+boot: auto
+init: false
+
+options:
+  watchdog_enabled: true
+  auto_start_claude: true
+  font_size: 14
+  theme: "dark"
+  tmux_enabled: true
+  scrollback_lines: 5000
+  max_death_tally: 3
+
+schema:
+ watchdog_enabled: bool
+ auto_start_claude: bool
+ font_size: int(8,32)
+ theme: list(dark|light)
+ tmux_enabled: bool
+ scrollback_lines: int(1000,50000)
+ max_death_tally: int(1,10)

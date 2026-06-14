@@ -1,0 +1,84 @@
+#!/usr/bin/with-contenv bashio
+
+# TASK-006: S6 service for ttyd terminal with HA Claude Addon configuration options
+# TASK-007: S6 watchdog configuration with max-death-tally and watchdog_enabled support
+
+bashio::log.info "Starting claude-ttyd service..."
+
+# === TASK-007: Watchdog Configuration ===
+WATCHDOG_ENABLED=$(bashio::config 'watchdog_enabled')
+MAX_DEATH_TALLY_FILE="/etc/s6-overlay/s6-rc.d/claude-ttyd/max-death-tally"
+DEATH_COUNT_DIR="/data/.mcp/watchdog"
+DEATH_COUNT_FILE="${DEATH_COUNT_DIR}/death-count"
+
+# Ensure watchdog directory exists
+mkdir -p "${DEATH_COUNT_DIR}" 2>/dev/null || true
+
+# Disable watchdog if explicitly set to false
+if [ "${WATCHDOG_ENABLED,,}" = "false" ]; then
+    bashio::log.info "Watchdog disabled via configuration, bypassing death count checks"
+else
+    # Read max-death-tally from config or use default (3)
+    MAX_DEATH_TALLY=$(cat /data/options.json 2>/dev/null | jq -r '.max_death_tally // empty')
+    if [ -n "$MAX_DEATH_TALLY" ] && [[ "$MAX_DEATH_TALLY" =~ ^[0-9]+$ ]] && [ "$MAX_DEATH_TALLY" -gt 0 ]; then
+        : # Use value from config
+    else
+        MAX_DEATH_TALLY=3
+    fi
+
+    # Initialize death count file if it doesn't exist
+    if [ ! -f "${DEATH_COUNT_FILE}" ]; then
+        echo "0" > "${DEATH_COUNT_FILE}"
+    fi
+
+    # Read current death count
+    CURRENT_DEATHS=$(cat "${DEATH_COUNT_FILE}" 2>/dev/null || echo "0")
+    
+    # Validate death count is a number, reset if invalid
+    if ! [[ "$CURRENT_DEATHS" =~ ^[0-9]+$ ]]; then
+        bashio::log.warning "Invalid death-count file content, resetting to 0"
+        CURRENT_DEATHS=0
+        echo "0" > "${DEATH_COUNT_FILE}"
+    fi
+
+    # Check if we've exceeded max-death-tally and fail the service
+    if [ "$CURRENT_DEATHS" -ge "$MAX_DEATH_TALLY" ]; then
+        bashio::log.error "Service has failed ${CURRENT_DEATHS}/${MAX_DEATH_TALLY} times consecutively, giving up to prevent infinite restart loop"
+        bashio::log.info "Consider checking logs for recurring issues or reducing watchdog sensitivity"
+        
+        # Clean up death count file
+        rm -f "${DEATH_COUNT_FILE}" 2>/dev/null || true
+        
+        exit 1
+    fi
+    
+    bashio::log.info "Watchdog active: current deaths=${CURRENT_DEATHS}, max_death_tally=${MAX_DEATH_TALLY}"
+fi
+
+# === End TASK-007 Watchdog Configuration ===
+
+# Read configuration options from addon config
+FONT_SIZE=$(bashio::config 'font_size')
+THEME=$(bashio::config 'theme')
+TMUX_ENABLED=$(bashio::config 'tmux_enabled')
+SCROLLBACK_LINES=$(bashio::config 'scrollback_lines')
+
+# Build ttyd command arguments with configuration options
+TTYD_ARGS=""
+
+# Add font size option if configured (default 14) using ttyd's key=value syntax
+if [ -n "${FONT_SIZE}" ] && [ "$FONT_SIZE" != "14" ]; then
+    TTYD_ARGS="${TTYD_ARGS} -t fontSize=${FONT_SIZE}"
+fi
+
+# Add theme option (dark/light) using ttyd's key=value syntax
+if [ -n "${THEME}" ]; then
+    TTYD_ARGS="${TTYD_ARGS} -t theme=${THEME}"
+fi
+
+# Use start-claude.sh as the default terminal command for claude access
+COMMAND="/usr/bin/start-claude.sh"
+
+# Start ttyd with the configured options and command
+bashio::log.info "Starting ttyd with font_size=${FONT_SIZE}, theme=${THEME}, tmux_enabled=${TMUX_ENABLED}"
+exec ttyd ${TTYD_ARGS} -p 7681 -W ${COMMAND}
