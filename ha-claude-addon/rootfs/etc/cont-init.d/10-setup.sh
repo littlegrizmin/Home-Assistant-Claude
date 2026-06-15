@@ -4,15 +4,26 @@
 
 bashio::log.info "Starting addon setup..."
 
-# Create /data/claude/ directory if it doesn't exist (persists between restarts)
-if [ ! -d "/data/claude" ]; then
-    bashio::log.info "Creating /data/claude directory for persistent storage"
-    mkdir -p /data/claude
+# Ensure persistent storage directory exists
+mkdir -p /data/claude
+
+# Ensure /root/.claude is always a symlink to /data/claude
+# If it's a real directory (e.g. from a previous bad state), migrate its contents first
+if [ -d "/root/.claude" ] && [ ! -L "/root/.claude" ]; then
+    bashio::log.warning "/root/.claude is a real directory, migrating contents to /data/claude..."
+    cp -a /root/.claude/. /data/claude/ 2>/dev/null || true
+    rm -rf /root/.claude
 fi
 
-# Create symlink from /root/.claude to /data/claude if it doesn't exist
-if [ ! -L "/root/.claude" ] && [ ! -d "/root/.claude" ]; then
-    bashio::log.info "Creating symlink /root/.claude -> /data/claude for Claude authentication persistence"
+# Remove broken symlink if present
+if [ -L "/root/.claude" ] && [ ! -e "/root/.claude" ]; then
+    bashio::log.warning "Removing broken symlink /root/.claude"
+    rm -f /root/.claude
+fi
+
+# Create symlink if not already correct
+if [ ! -L "/root/.claude" ]; then
+    bashio::log.info "Creating symlink /root/.claude -> /data/claude"
     ln -s /data/claude /root/.claude
 fi
 
